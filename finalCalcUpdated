@@ -76,7 +76,7 @@ function updateMinDownPayment() {
     var price = parseFloat(document.getElementById("price").value);
     var minDownPayment = 0;
 
-    if (price > 1000000) {
+    if (price > 999999) {
         minDownPayment = 20;
     } else if (price > 500000) {
         var minDownPaymentAmount = 0.05 * 500000 + 0.10 * (price - 500000);
