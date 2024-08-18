@@ -1,0 +1,155 @@
+9:03pm - 8/17/24 - perfect do not change
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgages by TJ ~ Mortgage Calculator</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f9f4ef; color: #333; }
+        header { background-color: #8ab18a; color: white; padding: 20px; text-align: center; }
+        header img { max-width: 150px; display: block; margin: 0 auto; }
+        header h1 { margin: 0; font-size: 2em; margin-top: 10px; }
+        .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .container h2 { margin-bottom: 20px; font-size: 1.5em; color: #8ab18a; }
+        .calculator input, .calculator select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; background-color: #f9f4ef; }
+        .calculator button { width: 100%; padding: 15px; background: #8ab18a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1.2em; }
+        .calculator button:hover { background: #6c956c; }
+        .result { margin-top: 20px; font-size: 1.2em; color: #8ab18a; }
+        footer { margin-top: 40px; text-align: center; padding: 20px; background-color: #f9f4ef; }
+        footer a { color: #8ab18a; text-decoration: none; font-size: 1em; }
+        footer a:hover { text-decoration: underline; }
+        .min-downpayment { color: #ff0000; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="c:\Users\kirst\Downloads\piggybank.png">
+    <h1>Mortgages by TJ</h1>
+</header>
+
+<div class="container">
+    <h2>Mortgage Calculator</h2>
+    
+    <div class="calculator">
+        <label for="price">Home Price:</label>
+        <input type="number" id="price" placeholder="Enter home price" required oninput="updateMinDownPayment()">
+        <small id="minDownPaymentText" class="min-downpayment"></small>
+        
+        <label for="downpayment">Down Payment (%):</label>
+        <input type="number" id="downpayment" placeholder="Enter down payment percentage" required>
+        
+        <label for="years">Term (Years):</label>
+        <select id="years">
+            <option value="25">25 Years</option>
+            <option value="20">20 Years</option>
+            <option value="15">15 Years</option>
+            <option value="10">10 Years</option>
+            <option value="5">5 Years</option>
+        </select>
+
+        <label for="rate">Custom Mortgage Rate (%):</label>
+        <input type="number" id="rate" placeholder="Enter mortgage rate" required>
+
+        <label for="frequency">Payment Frequency:</label>
+        <select id="frequency">
+            <option value="monthly">Monthly</option>
+            <option value="bi-weekly">Bi-Weekly</option>
+            <option value="weekly">Weekly</option>
+        </select>
+        
+        <button onclick="calculateMortgage()">Calculate</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+</div>
+
+<footer>
+    <p>Questions? <a href="https://mortgagesbytj.ca/contact">Contact Me</a></p>
+    <p><a href="https://mortgagesbytj.ca/" target="_blank">Visit my website!</a></p>
+</footer>
+
+<script>
+function updateMinDownPayment() {
+    var price = parseFloat(document.getElementById("price").value);
+    var minDownPayment = 0;
+
+    if (price > 1000000) {
+        minDownPayment = 20;
+    } else if (price > 500000) {
+        var minDownPaymentAmount = 0.05 * 500000 + 0.10 * (price - 500000);
+        minDownPayment = (minDownPaymentAmount / price) * 100;
+    } else {
+        minDownPayment = 5;
+    }
+
+    document.getElementById("minDownPaymentText").innerText = `The minimum downpayment is: ${minDownPayment.toFixed(2)}%`;
+}
+
+function calculateMortgage() {
+    var price = parseFloat(document.getElementById("price").value);
+    var downPaymentPercentage = parseFloat(document.getElementById("downpayment").value);
+    var years = parseInt(document.getElementById("years").value);
+    var frequency = document.getElementById("frequency").value;
+
+    var customRate = parseFloat(document.getElementById("rate").value);
+    var annualRate = customRate;
+
+    if (isNaN(annualRate) || annualRate <= 0) {
+        alert("Please enter a valid mortgage rate.");
+        return;
+    }
+
+    var monthlyRate = annualRate / 100 / 12;
+    var downPayment = (downPaymentPercentage / 100) * price;
+    var principal = price - downPayment;
+
+    // Determine CMHC premium based on down payment percentage sob idk exactly how it works but i think its accurate after testing
+    var cmhcRate = 0;
+    if (downPaymentPercentage < 20) {
+        if (downPaymentPercentage < 10) {
+            cmhcRate = 0.04;
+        } else if (downPaymentPercentage < 15) {
+            cmhcRate = 0.031;
+        } else {
+            cmhcRate = 0.028;
+        }
+    }
+
+    var cmhcInsurance = cmhcRate * principal;
+    principal += cmhcInsurance;
+
+    var totalPayments = years * 12;
+
+    switch (frequency) {
+        case "bi-weekly":
+            totalPayments = years * 26;
+            monthlyRate = annualRate / 100 / 26;
+            break;
+        case "weekly":
+            totalPayments = years * 52;
+            monthlyRate = annualRate / 100 / 52;
+            break;
+        default:
+            monthlyRate = annualRate / 100 / 12;
+            break;
+    }
+
+    var x = Math.pow(1 + monthlyRate, totalPayments);
+    var payment = (principal * monthlyRate * x) / (x - 1);
+
+    document.getElementById("result").innerHTML = `
+        <p>Home Price: $${price.toFixed(2)}</p>
+        <p>Down Payment: $${downPayment.toFixed(2)}</p>
+        <p>Principal: $${principal.toFixed(2)}</p>
+        <p>CMHC Insurance: $${cmhcInsurance.toFixed(2)}</p>
+        <p>Total Mortgage: $${(principal).toFixed(2)}</p>
+        <p><strong>Your ${frequency === 'monthly' ? 'Monthly' : frequency === 'bi-weekly' ? 'Bi-Weekly' : 'Weekly'} Payment: $${payment.toFixed(2)}</strong></p>
+    `;
+}
+</script>
+
+</body>
+</html>
